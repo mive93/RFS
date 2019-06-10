@@ -228,12 +228,17 @@ class Detections:
             else:
                 self.dets.append(det)
 
-
     def merge_simple(self, dets_d, dets_r, thresh=0.5, class_match=True):
-        for det in dets_d.dets:
-            iou, i = dets_r.find_best_iou(det, class_match)
-            if iou > thresh:
-                self.dets.append(det)
+        self.dets = deepcopy(dets_d.dets)
+        r_used = np.zeros(len(dets_r.dets))
+        for i in range(len(dets_r.dets)):
+            iou, max_i = dets_d.find_best_iou(dets_r.dets[i], class_match)
+            if iou >= thresh:
+                r_used[i] = 1
+        for i in range(len(r_used)):
+            if r_used[i] == 0:
+                self.dets.append(dets_r.dets[i])
+        # print(r_used)
 
     def printDets(self):
         for det in self.dets:
@@ -268,7 +273,7 @@ def get_dets_lists(d_path, r_path):
     d = []
     r = []
 
-    # d_files = d_files[:100]
+    d_files = d_files[:10]
     for f in d_files:
         detailed = Detections(os.path.join(d_path, f))
         d.append(detailed)
@@ -377,9 +382,9 @@ def main():
         d_dets.printDets()
         print("R: ------------------------------------")
         r_dets.printDets()
-        print("------------------------------------")
+        print("------------------------------------") 
         print(d_dets.index)
-        print(r_dets.index) """
+        print(r_dets.index)"""
         assert(d_dets.index == r_dets.index)
         b = Detections()
         b.merge_simple(d_dets, r_dets)
