@@ -2,7 +2,7 @@
 import matplotlib.pyplot as plt
 
 
-def plot_lines(prec_data, rec_data, f1_data, markers, labels):
+def plot_lines(prec_data, rec_data, f1_data, markers, labels, to_show=True):
     f, (ax1, ax2, ax3) = plt.subplots(3, 1, sharey=True)
     images = list(range(1, len(prec_data[0]) + 1))
 
@@ -23,10 +23,12 @@ def plot_lines(prec_data, rec_data, f1_data, markers, labels):
     plt.figlegend(handles, labels, bbox_to_anchor=(1, 0.5), loc="center left")
     plt.tight_layout()
     plt.savefig('../img/lines.svg', format="svg", bbox_inches="tight")
-    plt.show()
+    plt.legend()
+    if to_show:
+        plt.show()
 
 
-def plot_boxplots(prec_data, rec_data, f1_data, labels):
+def plot_boxplots(prec_data, rec_data, f1_data, labels, to_show=False):
 
     f, (ax1, ax2, ax3) = plt.subplots(3, 1, sharey=True)
 
@@ -47,4 +49,5 @@ def plot_boxplots(prec_data, rec_data, f1_data, labels):
     plt.tight_layout()
 
     plt.savefig('../img/boxplots.svg', format="svg", bbox_inches="tight")
-    plt.show()
+    if to_show:
+        plt.show()

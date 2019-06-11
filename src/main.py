@@ -3,8 +3,6 @@
 
 import argparse
 import os
-import pandas as pd
-import numpy as np
 from copy import deepcopy
 from plot_utils import plot_boxplots, plot_lines
 from evaluation import computeF1Score, computePrecision, computeRecall, getTPFPFN
@@ -39,7 +37,7 @@ def get_dets_lists(d_path, r_path):
     d = []
     r = []
 
-    # d_files = d_files[648:650]
+    # d_files = d_files[:20]
     for f in d_files:
         detailed = detClass.Detections(os.path.join(d_path, f))
         d.append(detailed)
@@ -60,7 +58,7 @@ def computePrecisionRecallF1score(gt, ts, thresh, weight_type, class_match, verb
     f1score = []
     for gt_dets, ts_dets in zip(gt, ts):
         TP, FP, FN = getTPFPFN(gt_dets, ts_dets, thresh,
-                               weight_type, class_match)
+                               weight_type, class_match, verbose)
         p = computePrecision(TP, FP)
         r = computeRecall(TP, FN)
         f1 = computeF1Score(p, r)
@@ -86,20 +84,54 @@ def printDetRefBas(d_dets, r_dets, b_dets):
     print("**********************************************************")
 
 
+def mergeAtFixedRates(d, r, d_rate, r_rate=30, verbose=False):
+    skip = int(r_rate/d_rate)
+    assert(len(d) == len(r))
+    merge = []
+    for i in range(len(d)):
+        if i % skip == 0:
+            assert(d[i].index == r[i].index)
+            m = detClass.Detections()
+            m.merge_simple(d[i], r[i])
+            merge.append(m)
+            if verbose:
+                printDetRefBas(d[i], r[i], m)
+        else:
+            m = deepcopy(r[i])
+            merge.append(m)
+            if verbose:
+                printDetRefBas(detClass.Detections(), r[i], m)
+    return merge
+
+
+def merge_test(d, r, d_rate, r_rate, thresh, weight_type, class_match, precision_data, recall_data, f1score_data, markers, labels, verbose = False):
+
+    merge = mergeAtFixedRates(d, r, d_rate, r_rate, verbose)
+    test_name = "D"+str(d_rate)+"-R"+str(r_rate)
+    precision, recall, f1score = computePrecisionRecallF1score(
+        d, merge, thresh, weight_type, class_match, verbose)
+
+    precision_data.append(precision)
+    recall_data.append(recall)
+    f1score_data.append(f1score)
+    markers.append('')
+    labels.append(test_name)
+
+
+def single_test(d, r, test_name, marker,  thresh, weight_type, class_match, precision_data, recall_data, f1score_data, markers, labels, verbose=False):
+    precision, recall, f1score = computePrecisionRecallF1score(
+        d, r, thresh, weight_type, class_match, verbose)
+
+    precision_data.append(precision)
+    recall_data.append(recall)
+    f1score_data.append(f1score)
+    markers.append(marker)
+    labels.append(test_name)
+
+
 def main():
     args = parse_args()
     d, r = get_dets_lists(args.detailed, args.reflex)
-
-    verbose = False
-
-    baseline = []
-    for d_dets, r_dets in zip(d, r):
-        assert(d_dets.index == r_dets.index)
-        b = detClass.Detections()
-        b.merge_simple(d_dets, r_dets)
-        baseline.append(b)
-        if verbose:
-            printDetRefBas(d_dets, r_dets, b)
 
     precision_data = []
     recall_data = []
@@ -107,21 +139,21 @@ def main():
     markers = []
     labels = []
 
-    precision, recall, f1score = computePrecisionRecallF1score(
-        d, baseline, 0.5, "one", True)
-    precision_data.append(precision)
-    recall_data.append(recall)
-    f1score_data.append(f1score)
-    markers.append('*')
-    labels.append("D30")
-
-    precision, recall, f1score = computePrecisionRecallF1score(
-        d, r, 0.5, "one", True)
-    precision_data.append(precision)
-    recall_data.append(recall)
-    f1score_data.append(f1score)
-    markers.append('')
-    labels.append("D30-R30")
+    
+    single_test(d, d, "D30 (baseline)", '*', 0.5, "one", True, precision_data,
+                recall_data, f1score_data, markers, labels)
+    single_test(d, r, "R30", '+', 0.5, "one", True, precision_data,
+                recall_data, f1score_data, markers, labels)
+    merge_test(d, r, 30, 30, 0.5, "one", True, precision_data,
+               recall_data, f1score_data, markers, labels)
+    merge_test(d, r, 15, 30, 0.5, "one", True, precision_data,
+               recall_data, f1score_data, markers, labels)
+    merge_test(d, r, 10, 30, 0.5, "one", True, precision_data,
+               recall_data, f1score_data, markers, labels)
+    merge_test(d, r, 6, 30, 0.5, "one", True, precision_data,
+               recall_data, f1score_data, markers, labels)
+    merge_test(d, r, 3, 30, 0.5, "one", True, precision_data,
+               recall_data, f1score_data, markers, labels)
 
     plot_boxplots(precision_data, recall_data, f1score_data, labels)
     plot_lines(precision_data, recall_data, f1score_data, markers, labels)
