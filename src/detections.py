@@ -115,7 +115,7 @@ class Detections:
         else:
             return False
 
-    def merge_simple(self, dets_d, dets_r, thresh=0.5, class_match=False):
+    def merge_simple(self, dets_d, dets_r, thresh=0.5, class_match=True):
         self.index = dets_d.index
         self.dets = deepcopy(dets_d.dets)
         r_used = np.zeros(len(dets_r.dets))
@@ -131,3 +131,6 @@ class Detections:
     def printDets(self):
         for det in self.dets:
             print(det.__str__())
+
+    def getLen(self):
+        return len(self.dets)

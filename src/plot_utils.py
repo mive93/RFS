@@ -26,6 +26,7 @@ def plot_lines(prec_data, rec_data, f1_data, markers, labels, to_show=True):
     plt.legend()
     if to_show:
         plt.show()
+    plt.close('all')
 
 
 def plot_boxplots(prec_data, rec_data, f1_data, labels, to_show=False):
@@ -51,3 +52,31 @@ def plot_boxplots(prec_data, rec_data, f1_data, labels, to_show=False):
     plt.savefig('../img/boxplots.svg', format="svg", bbox_inches="tight")
     if to_show:
         plt.show()
+    plt.close('all')
+
+
+def plot_tracked_object(tracker):
+    plt.figure()
+    x = [det.x for det in tracker.dets.dets]
+    y = [det.y for det in tracker.dets.dets]
+    plt.plot(x, y)
+    plt.show()
+    plt.close('all')
+
+
+def plot_all_tracked_objects(trackers, title, to_show=False):
+    fig = plt.figure()
+    fig.suptitle(title)
+    axes = plt.gca()
+    axes.set_xlim([0, 1080])
+    axes.set_ylim([0, 720])
+    plt.gca().set_aspect('equal', adjustable='box')
+    for tracker in trackers.trackers:
+        x = [det.x*1080 for det in tracker.dets.dets]
+        y = [det.y*720 for det in tracker.dets.dets]
+        plt.plot(x, y, '.-', color=tracker.color)
+    plt.savefig('../img/track/'+title+'.png', format="png", bbox_inches="tight")
+    if to_show:
+        plt.show()
+
+    plt.close('all')
