@@ -32,12 +32,15 @@ class setOfTrackers:
     def decreaseAge(self, index):
         self.trackers[index].age = self.trackers[index].age-1
 
+    def getLastDets(self):
+        return [tracker.dets.dets[-1] for tracker in self.trackers]
+
     def track(self, dets, thresh, class_match=True):
         # cleaning old trackers
         self.cleanTrackers()
 
         # updating existing trackers
-        last_tracked_dets = [x.dets.dets[-1] for x in self.trackers]
+        last_tracked_dets = self.getLastDets()
         used_dets = np.zeros(dets.getLen())
         for i in range(len(last_tracked_dets)):
             iou, max_i = dets.find_best_iou(last_tracked_dets[i], class_match)
@@ -61,21 +64,30 @@ class setOfTrackers:
             self.trackers[i].dets.printDets()
             print("-------------------------------------------------------")
 
+    
+        
 
-def track_objects(all_dets, scene_change, verbose=False):
 
+def track_objects(all_dets, scene_change, age=3, verbose=False):
+
+    tracked_dets = []
     i = 1
     for dets in all_dets:
         if dets.index % scene_change == 1:
-            print("scene change")
-            trackers = setOfTrackers()
+            # print("scene change")
+            trackers = setOfTrackers(age)
 
         trackers.track(dets, 0.5)
+        
+        last_dets = detClass.Detections()
+        [last_dets.append(det) for det in trackers.getLastDets()]
+        tracked_dets.append(last_dets)
 
         if verbose:
             dets.printDets()
             print(str(i) + " ###########################")
             trackers.printTrackers()
 
-        plot_all_tracked_objects(trackers, str(i))
+        # plot_all_tracked_objects(trackers, str(i))
         i += 1
+    return tracked_dets

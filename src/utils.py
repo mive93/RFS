@@ -33,7 +33,7 @@ def get_dets_lists(d_path, r_path):
     d = []
     r = []
 
-    d_files = d_files[:301]
+    # d_files = d_files[:301]
     for f in d_files:
         detailed = detClass.Detections(os.path.join(d_path, f))
         d.append(detailed)

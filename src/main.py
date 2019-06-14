@@ -86,7 +86,7 @@ def single_test(d, r, test_name, marker,  thresh, weight_type, class_match, prec
     labels.append(test_name)
 
 
-def main():
+def without_tracking():
     args = parse_args()
     d, r = get_dets_lists(args.detailed, args.reflex)
 
@@ -111,16 +111,57 @@ def main():
     single_test(d, r, "R30", '+', 0.5, "one", True, precision_data,
                 recall_data, f1score_data, markers, labels)
 
-    plot_boxplots(precision_data, recall_data, f1score_data, labels)
-    plot_lines(precision_data, recall_data, f1score_data, markers, labels)
+    plot_boxplots('../img/boxplots.svg',precision_data, recall_data, f1score_data, labels)
+    plot_lines('../img/lines.svg',precision_data, recall_data, f1score_data, markers, labels)
 
-    writeDataOnFile("../out_data/precision.csv", precision_data, labels)
-    writeDataOnFile("../out_data/recall.csv", recall_data, labels)
+    # writeDataOnFile("../out_data/precision.csv", precision_data, labels)
+    # writeDataOnFile("../out_data/recall.csv", recall_data, labels)
+
+
+def with_tracking():
+    args = parse_args()
+    d, r = get_dets_lists(args.detailed, args.reflex)
+
+    precision_data = []
+    recall_data = []
+    f1score_data = []
+    markers = []
+    labels = []
+
+    d_tracking = track_objects(d, 150)
+    single_test(d_tracking, d_tracking, "D30 tracking(baseline)", '*', 0.5, "one", True, precision_data,
+                recall_data, f1score_data, markers, labels)
+    # single_test(d_tracking, d, "D30", '', 0.5, "one", True, precision_data,
+    #             recall_data, f1score_data, markers, labels)
+
+    merge15 = mergeAtFixedRates(d, r, 15, 30)
+    d_tracking_merge15 = track_objects(merge15, 150)
+    single_test(d_tracking, d_tracking_merge15, "D15-R30 tracking", '', 0.5, "one", True, precision_data,
+                recall_data, f1score_data, markers, labels)
+
+    merge10 = mergeAtFixedRates(d, r, 10, 30)
+    d_tracking_merge10 = track_objects(merge10, 150)
+    single_test(d_tracking, d_tracking_merge10, "D10-R30 tracking", '', 0.5, "one", True, precision_data,
+                recall_data, f1score_data, markers, labels)
+
+    merge6 = mergeAtFixedRates(d, r, 6, 30)
+    d_tracking_merge6 = track_objects(merge6, 150)
+    single_test(d_tracking, d_tracking_merge6, "D6-R30 tracking", '', 0.5, "one", True, precision_data,
+                recall_data, f1score_data, markers, labels)
+
+    merge3 = mergeAtFixedRates(d, r, 3, 30)
+    d_tracking_merge3 = track_objects(merge3, 150)
+    single_test(d_tracking, d_tracking_merge3, "D3-R30 tracking", '', 0.5, "one", True, precision_data,
+                recall_data, f1score_data, markers, labels)
+
+    r_tracking = track_objects(r, 150)
+    single_test(d_tracking, r_tracking, "R30 tracking", '', 0.5, "one", True, precision_data,
+                recall_data, f1score_data, markers, labels)
+
+    plot_boxplots('../img/boxplots_tracking.svg', precision_data, recall_data, f1score_data, labels)
+    plot_lines('../img/lines_tracking.svg',precision_data, recall_data, f1score_data, markers, labels)
 
 
 if __name__ == '__main__':
-    # main()
-
-    args = parse_args()
-    d, r = get_dets_lists(args.detailed, args.reflex)
-    track_objects(d,150)
+    # without_tracking()
+    with_tracking()
