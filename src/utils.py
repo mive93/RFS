@@ -33,14 +33,17 @@ def get_dets_lists(d_path, r_path):
     d = []
     r = []
 
-    # d_files = d_files[:301]
+    d_files = d_files[:150]
     for f in d_files:
         detailed = detClass.Detections(os.path.join(d_path, f))
+        [det.set_conf_det() for det in detailed.dets]
         d.append(detailed)
         """ print("D: ---------")
         detailed.printDets() """
+        
 
         refelx = detClass.Detections(os.path.join(r_path, f))
+        [det.set_conf_ref() for det in refelx.dets]
         r.append(refelx)
         """ print("R: ---------")
         refelx.printDets() """

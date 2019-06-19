@@ -41,12 +41,13 @@ class Bbox:
 
 
 class Det(Bbox):
-    def __init__(self, l, i=-1):
+    def __init__(self, l, i=-1, conf=0):
         line = l.split(",")
         assert(len(line) >= 4)
         Bbox.__init__(self, line[0], line[1], line[2], line[3])
         self.classes = set(map(int, line[4:]))
         self.index = i
+        self.confidence = conf
 
     def move_fwd(self, d):
         self.x = d.x
@@ -63,8 +64,14 @@ class Det(Bbox):
         if weight_type == "area":
             return self.area
 
+    def set_conf_det(self):
+        self.confidence += 0.6
+
+    def set_conf_ref(self):
+        self.confidence += 0.2
+
     def __str__(self):
-        return Bbox.__str__(self) + " classes: "+str(self.classes) + ", index: " + str(self.index)
+        return Bbox.__str__(self) + " classes: "+str(self.classes) + ", index: " + str(self.index) + ", confidence score: " + str(self.confidence)
 
 
 class Detections:
@@ -123,9 +130,10 @@ class Detections:
             iou, max_i = dets_d.find_best_iou(dets_r.dets[i], class_match)
             if iou >= thresh:
                 r_used[i] = 1
+                self.dets[max_i].set_conf_ref()
         for i in range(len(r_used)):
             if r_used[i] == 0:
-                self.dets.append(dets_r.dets[i])
+                self.dets.append(deepcopy(dets_r.dets[i]))
         # print(r_used)
 
     def printDets(self):

@@ -72,9 +72,10 @@ def plot_all_tracked_objects(trackers, title, to_show=False):
     axes.set_ylim([0, 720])
     plt.gca().set_aspect('equal', adjustable='box')
     for tracker in trackers.trackers:
-        x = [det.x*1080 for det in tracker.dets.dets]
-        y = [720 - det.y*720 for det in tracker.dets.dets]
-        plt.plot(x, y, '.-', color=tracker.color)
+        if tracker.confidence > 0.45:
+            x = [det.x*1080 for det in tracker.dets.dets]
+            y = [720 - det.y*720 for det in tracker.dets.dets]
+            plt.plot(x, y, '.-', color=tracker.color)
     plt.savefig('../img/track/'+title+'.png', format="png", bbox_inches="tight")
     if to_show:
         plt.show()

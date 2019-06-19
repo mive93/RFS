@@ -128,18 +128,16 @@ def with_tracking():
     markers = []
     labels = []
 
-    d_tracking = track_objects(d, 150)
-    single_test(d_tracking, d_tracking, "D30 tracking(baseline)", '*', 0.5, "one", True, precision_data,
-                recall_data, f1score_data, markers, labels)
-    # single_test(d_tracking, d, "D30", '', 0.5, "one", True, precision_data,
+    # d_tracking = track_objects(d, 150)
+    # single_test(d_tracking, d_tracking, "D30 tracking(baseline)", '*', 0.5, "one", True, precision_data,
     #             recall_data, f1score_data, markers, labels)
+    
+    merge15 = mergeAtFixedRates(d, r, 30, 30)
+    d_tracking_merge15 = track_objects(merge15, 150, 3, True)
+    # single_test(d_tracking, d_tracking_merge15, "D15-R30 tracking", '', 0.5, "one", True, precision_data,
+    #             recall_data, f1score_data, markers, labels, True)
 
-    merge15 = mergeAtFixedRates(d, r, 15, 30)
-    d_tracking_merge15 = track_objects(merge15, 150)
-    single_test(d_tracking, d_tracking_merge15, "D15-R30 tracking", '', 0.5, "one", True, precision_data,
-                recall_data, f1score_data, markers, labels)
-
-    merge10 = mergeAtFixedRates(d, r, 10, 30)
+    """merge10 = mergeAtFixedRates(d, r, 10, 30)
     d_tracking_merge10 = track_objects(merge10, 150)
     single_test(d_tracking, d_tracking_merge10, "D10-R30 tracking", '', 0.5, "one", True, precision_data,
                 recall_data, f1score_data, markers, labels)
@@ -160,7 +158,7 @@ def with_tracking():
 
     plot_boxplots('../img/boxplots_tracking.svg', precision_data, recall_data, f1score_data, labels)
     plot_lines('../img/lines_tracking.svg',precision_data, recall_data, f1score_data, markers, labels)
-
+    """
 
 if __name__ == '__main__':
     # without_tracking()
