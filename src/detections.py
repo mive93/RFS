@@ -41,13 +41,14 @@ class Bbox:
 
 
 class Det(Bbox):
-    def __init__(self, l, i=-1, conf=0):
+    def __init__(self, l, i=-1, conf=0, id=''):
         line = l.split(",")
         assert(len(line) >= 4)
         Bbox.__init__(self, line[0], line[1], line[2], line[3])
         self.classes = set(map(int, line[4:]))
         self.index = i
         self.confidence = conf
+        self.id = id
 
     def move_fwd(self, d):
         self.x = d.x
@@ -71,7 +72,7 @@ class Det(Bbox):
         self.confidence += 0.2
 
     def __str__(self):
-        return Bbox.__str__(self) + " classes: "+str(self.classes) + ", index: " + str(self.index) + ", confidence score: " + str(self.confidence)
+        return Bbox.__str__(self) + " classes: "+str(self.classes) + ", index: " + str(self.index) + ", confidence score: " + str(self.confidence) + ", id: " + self.id 
 
 
 class Detections:
@@ -88,8 +89,15 @@ class Detections:
                 del lines[-1]
 
         self.index = int(os.path.basename(file_name))
+        id=0
+        if 'r30' in file_name:
+            d_type = 'r'
+        else:
+            d_type = 'd'
+
         for l in lines:
-            self.dets.append(Det(l, self.index))
+            self.dets.append(Det(l, self.index, id=(d_type+'-'+str(self.index)+'-'+str(id))))
+            id+=1
 
     def find_best_iou(self, d, class_match=True):
         iou = []

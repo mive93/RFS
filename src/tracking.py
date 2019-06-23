@@ -32,10 +32,18 @@ class setOfTrackers:
         self.maximum_age = maximum_age
         self.minimum_confidence = minimum_confidence
 
+    def save_dets_life(self, cur_frame_id, life_file, last=False):
+        for tracker in self.trackers:
+            if last or tracker.confidence < self.minimum_confidence:
+                for det in tracker.dets.dets:
+                    line = det.id +';'+str(cur_frame_id - det.index)+'\n'
+                    life_file.write(line)
+
     def clean_trackers_age(self):
         self.trackers = [x for x in self.trackers if not x.age == 0]
 
-    def clean_trackers_confidence(self):
+    def clean_trackers_confidence(self, life_file, cur_frame_id):
+        self.save_dets_life(cur_frame_id,life_file)
         self.trackers = [
             x for x in self.trackers if not x.confidence < self.minimum_confidence]
 
@@ -52,10 +60,10 @@ class setOfTrackers:
     def getLastDets(self):
         return [tracker.dets.dets[-1] for tracker in self.trackers]
 
-    def track(self, dets, thresh, class_match=True):
+    def track(self, dets, thresh, life_file, cur_frame_id, class_match=True):
         # cleaning old trackers
         # self.clean_trackers_age()
-        self.clean_trackers_confidence()
+        self.clean_trackers_confidence(life_file, cur_frame_id)
 
         # updating existing trackers
         last_tracked_dets = self.getLastDets()
@@ -88,14 +96,18 @@ class setOfTrackers:
 
 def track_objects(all_dets, scene_change, age=3, verbose=False):
 
+    f = open('../out_data/test_life.csv', "w+")
+
     tracked_dets = []
     i = 1
     for dets in all_dets:
         if dets.index % scene_change == 1:
             print("scene change")
+            if i > 1:
+                trackers.save_dets_life(i, f, True)
             trackers = setOfTrackers(age)
 
-        trackers.track(dets, 0.5)
+        trackers.track(dets, 0.5, f, i)
 
         last_dets = detClass.Detections()
         [last_dets.append(det) for det in trackers.getLastDets()]
@@ -106,6 +118,9 @@ def track_objects(all_dets, scene_change, age=3, verbose=False):
             print(str(i) + " ###########################")
             trackers.printTrackers()
 
-        plot_all_tracked_objects(trackers, str(i))
+        # plot_all_tracked_objects(trackers, str(i))
         i += 1
+
+    trackers.save_dets_life(i,f, True)
+    f.close()
     return tracked_dets
