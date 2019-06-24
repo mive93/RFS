@@ -6,10 +6,34 @@ def plot_lines(filename, prec_data, rec_data, f1_data, markers, labels, to_show=
     f, (ax1, ax2, ax3) = plt.subplots(3, 1, sharey=True)
     images = list(range(1, len(prec_data[0]) + 1))
 
+    loop_around = 30
+    div = len(images) / loop_around
+    img = list(range(loop_around))
+    assert(len(images) % loop_around == 0)
+
+    re = []
+    pr = []
+    f1 = []
+
+    for j in range(len(prec_data)):
+        re.append([0] * loop_around)
+        pr.append([0] * loop_around)
+        f1.append([0] * loop_around)
+
+        for i in range(len(prec_data[j])):
+            re[j][i % loop_around] = re[j][i % loop_around] + rec_data[j][i]
+            pr[j][i % loop_around] = pr[j][i % loop_around] + prec_data[j][i]
+            f1[j][i % loop_around] = f1[j][i % loop_around] + f1_data[j][i]
+
+        re[j] = [x/div for x in re[j]]
+        pr[j] = [x/div for x in pr[j]]
+        f1[j] = [x/div for x in f1[j]]
+
+
     for i in range(len(prec_data)):
-        ax1.plot(images, rec_data[i], label=labels[i], marker=markers[i])
-        ax2.plot(images, prec_data[i], label=labels[i], marker=markers[i])
-        ax3.plot(images, f1_data[i], label=labels[i], marker=markers[i])
+        ax1.plot(img, re[i], label=labels[i], marker=markers[i])
+        ax2.plot(img, pr[i], label=labels[i], marker=markers[i])
+        ax3.plot(img, f1[i], label=labels[i], marker=markers[i])
 
     ax1.set_xlabel("Recall")
     ax2.set_xlabel("Precision")
