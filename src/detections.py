@@ -39,6 +39,10 @@ class Bbox:
     def __str__(self):
         return "(x: " + str(self.x) + ", y: " + str(self.y) + ", w: " + str(self.w) + ", h: " + str(self.h) + ")"
 
+    def skew(self):
+        self.x = (self.x + random()) % 1
+        self.y = (self.y + random()) % 1
+
 
 class Det(Bbox):
     def __init__(self, l, i=-1, conf=0, id=''):
@@ -150,3 +154,23 @@ class Detections:
 
     def getLen(self):
         return len(self.dets)
+
+    def fault_inject(self, fault_type):
+        if fault_type is "skew":
+            i = randrange(len(self.dets))
+            d = deepcopy(self.dets[i])
+            self.dets[i].skew()
+            return d, self.dets[i]
+
+        if fault_type is "fn":
+            i = randrange(len(self.dets))
+            d = self.dets.pop(i)
+            return d
+
+        if fault_type is "fp":
+            d = Det([random(), random(), random()%0.5, random()%0.5]
+                    + list(range(81)), self.index)
+            self.dets.append(d)
+            return d
+
+
